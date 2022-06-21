@@ -1,0 +1,43 @@
+top_srcdir=..
+CC=gcc
+CXX=g++
+CCASFLAGS=-g -O2 -Wall -Werror -std=gnu99 -fno-strict-aliasing -fno-strict-overflow -D_FORTIFY_SOURCE=2 -fstack-protector-all -DHAVE_GNU_STACK -Wno-implicit-function-declaration
+CFLAGS=-g -O2 -Wall -Werror -std=gnu99 -fno-strict-aliasing -fno-strict-overflow -D_FORTIFY_SOURCE=2 -fstack-protector-all -DHAVE_GNU_STACK -Wno-pointer-sign
+CXXFLAGS=-g -O2 -Wall -Werror -std=c++03 -fno-strict-aliasing -fno-strict-overflow -D_FORTIFY_SOURCE=2 -fstack-protector-all -DHAVE_GNU_STACK
+CPPFLAGS=-D_DEFAULT_SOURCE -D_BSD_SOURCE -D_POSIX_SOURCE -D_GNU_SOURCE -DNO_SYSLOG -DSQLITE_OMIT_LOAD_EXTENSION -DSQLITE_THREADSAFE=0
+DEFS=
+INCLUDE=-I.
+LDFLAGS=-Wl,-z,relro -Wl,-z,now
+
+
+all: main_nosgx link
+
+main.o: main.c
+	@$(CC) -g -O2 -fPIC -DPIC -Werror -c $< -o $@
+	@echo "CC   <=  $<"
+
+sqlite3.o: sqlite3.c
+	$(eval srcbasefile=$(basename $@))
+	$(eval dstbasefile=$(basename $(notdir $@)))
+	$(eval maindir=$(dir $@))
+	$(CC) $(DEFS) $(INCLUDE) $(CPPFLAGS) $(CFLAGS) -E -o $(maindir)$(dstbasefile).i $(srcbasefile).c
+	$(CC) $(DEFS) $(INCLUDE) $(CPPFLAGS) $(CFLAGS) -fPIC -DPIC -c -o $(maindir)$(dstbasefile).o $(maindir)$(dstbasefile).i
+	@echo "CC  <=  $<"
+
+database.o: database.c
+	$(eval srcbasefile=$(basename $@))
+	$(CC) $(CFLAGS) -I. -E -o $(srcbasefile).i $<
+	$(CC) $(CFLAGS) -fPIC -DPIC -c -o $@ $(srcbasefile).i
+	@echo "CC  <=  $<"
+
+link: sqlite3.o database.o
+	ar cru libenclave.a sqlite3.o database.o
+
+main_nosgx: link main.o
+	$(CC) $(CFLAGS) -o $@ main.o -lpthread -L. -lenclave -lpthread
+
+clean:
+	@find . -iname "*\.o" -delete
+	@find . -iname "*\.i" -delete
+	@rm -f main_nosgx
+

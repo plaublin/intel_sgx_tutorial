@@ -1,0 +1,46 @@
+// Licensed to the Apache Software Foundation (ASF) under one
+// or more contributor license agreements.  See the NOTICE file
+// distributed with this work for additional information
+// regarding copyright ownership.  The ASF licenses this file
+// to you under the Apache License, Version 2.0 (the
+// "License"); you may not use this file except in compliance
+// with the License.  You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+
+enclave {
+    from "sgx_tstd.edl" import *;
+    from "sgx_stdio.edl" import *;
+    from "sgx_backtrace.edl" import *;
+    from "sgx_tstdc.edl" import *;
+
+	 include "my_struct.h"
+
+    trusted {
+		 /* define ECALLs here. */
+		 public sgx_status_t ecall_aes_gcm_128_encrypt(
+				 [in, size=len] const uint8_t* plaintext,
+				 size_t len,
+				 [out, size=len] uint8_t* ciphertext,
+				 [out] uint8_t mac[16]);
+
+		 public sgx_status_t ecall_aes_gcm_128_decrypt(
+				 [in, size=len] const uint8_t* ciphertext,
+				 size_t len,
+				 [in] uint8_t mac[16],
+				 [out, size=len] uint8_t* plaintext);
+
+		 public void ecall_bindgen_send_datastructure(struct MyStruct s);
+
+		 public void ecall_bincode_send_datastructure(
+				 [in, size=len] const uint8_t* serialized,
+				 size_t len);
+	 };
+};

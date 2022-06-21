@@ -1,0 +1,57 @@
+enclave {
+	from "sgx_tstdc.edl" import *;
+	include "user_types.h"
+
+	trusted {
+		public void* ecall_initialize_database([in, string] const char* dbname);
+		public int ecall_execute_statement([user_check] const void* dbhandle, [in, string] const char* stmt);
+		public void ecall_close_database([user_check] const void* dbhandle);
+	};
+	
+	untrusted {
+		/* 
+		 * ocall_print_string - invokes OCALL to display string buffer inside the enclave.
+		 * ocall_println_string - same as ocall_print_string but with a new line
+		 *  [in]: copy the string buffer to App outside.
+		 *  [string]: specifies 'str' is a NULL terminated buffer.
+		 */
+		void ocall_print_string([in, string] const char* str);
+		void ocall_println_string([in, string] const char* str);
+
+		int ocall_fsync(int fd);
+		int ocall_ftruncate(int fd, off_t length);      
+		int ocall_unlink([in, string] const char* str);
+		off_t ocall_lseek(int fd, off_t offset, int whence) propagate_errno;
+		int ocall_lstat([in,string] const char *pathname, [in, out, size=size] struct stat *buf, size_t size) propagate_errno;          
+		int ocall_fstat(int fd, [in, out, size=size] struct stat *buf, size_t size) propagate_errno;            
+		int ocall_stat([in,string] const char *path, [in, out, size=size] struct stat *buf, size_t size);
+		int ocall_fcntl(int fd, int cmd, [in, size=size] void* arg, size_t size) propagate_errno;               
+		char* ocall_getcwd([out,size=size] char *buf, size_t size) propagate_errno;             
+		void ocall_exit(int s);
+		void* ocall_malloc(size_t size);
+		void* ocall_mmap([user_check] void *addr, size_t length, int prot, int flags, int fd, off_t offset);
+		void* ocall_realloc([user_check] void* ptr, size_t size);
+		void* ocall_calloc(size_t nmemb, size_t size);
+		void ocall_free([user_check] void* ptr);
+		void* ocall_fopen([user_check] const char *path, [user_check] const char *mode);
+		/* 2 ocalls to fwrite, depending on if ptr is allocated inside the enclave (fwrite_copy) or outside (fwrite) */
+		size_t ocall_fwrite_copy([in, size=size, count=nmemb] const void *ptr, size_t size, size_t nmemb, [user_check] void *stream);
+		size_t ocall_fwrite([user_check] const void *ptr, size_t size, size_t nmemb, [user_check] void *stream);
+		int ocall_fflush([user_check] void* stream);
+		int ocall_fclose([user_check] void* fp);
+		int ocall_close(int fd);
+		char *ocall_fgets([out, size=size] char *s, size_t size, [user_check] void *stream);
+		int ocall_open([in, string] const char *filename, int flags, mode_t mode);
+		int ocall_open64([in, string] const char *filename, int flags, mode_t mode);
+		int ocall_read(int fd, [out, size=count] void *buf, size_t count) propagate_errno;
+		int ocall_write(int fd, [in, size=count] const void *buf, size_t count) propagate_errno;
+		int ocall_getpid(void);
+		int ocall_getuid(void);
+		long int ocall_time([in] long int *t);
+		int ocall_gettimeofday([out] struct timeval* tv, [out] struct timezone* tz);
+		void ocall_nanosleep(unsigned long sec, unsigned long nanosec);
+		ssize_t ocall_pread(int fd, [out, size=count] void *buf, size_t count, off_t offset);
+		ssize_t ocall_pwrite(int fd, [in, size=count] const void *buf, size_t count, off_t offset);
+		long ocall_sysconf(int name);
+	};
+};

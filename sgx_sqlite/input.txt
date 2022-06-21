@@ -1,0 +1,9 @@
+CREATE TABLE towns ( town VARCHAR(64), county VARCHAR(64), state VARCHAR(2) NOT NULL);
+
+INSERT INTO towns VALUES ('Billerica','Middlesex','MA');
+INSERT INTO towns VALUES ('Buffalo','Erie','NY');
+INSERT INTO towns VALUES ('Bay View','Erie','OH');
+
+SELECT count(*) AS total FROM towns;
+SELECT town, state FROM towns ORDER BY town;
+QUIT
