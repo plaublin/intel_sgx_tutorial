@@ -1,7 +1,5 @@
 # Intel SGX tutorial
 
-([ここに和訳文があります](README_jp.md))
-
 ## Introduction
 
 Cloud computing users send their code and data to the cloud provider,
@@ -95,7 +93,7 @@ Reference](https://download.01.org/intel-sgx/sgx-linux/2.16/docs/Intel_SGX_Devel
 
 Enclave transitions (`ecalls` or `ocalls`) are a performance bottleneck and
 should be avoided if possible. Techniques such as asynchronous calls
-implemented in [TaLoS](https://github.com/lsds/TaLoS), or switchelss calls
+implemented in [TaLoS](https://github.com/lsds/TaLoS), or switchless calls
 implemented in the SGX SDK (via the `transition_using_threads`; see Intel
 documentation) can help to alleviate this problem.
 
@@ -109,11 +107,17 @@ For production environments, the in-kernel or DCAP driver is to be prefered.
 For debugging and ease of use, as in this tutorial, we will use the out-of-tree
 driver.
 
-The driver and documentation can be found
+The latest driver and documentation can be found
 [here](https://download.01.org/intel-sgx/latest/linux-latest/). Please check
 this link to find the correct driver for your distribution. For example, for
 Ubuntu 20.04, the 3 driver versions are located
-[here](https://download.01.org/intel-sgx/latest/linux-latest/distro/ubuntu20.04-server/). The out-of-tree driver is the one with an hexadecimal chain in the name, e.g., `sgx_linux_x64_driver_2.11.054c9c4c.bin`.
+[here](https://download.01.org/intel-sgx/latest/linux-latest/distro/ubuntu20.04-server/).
+The out-of-tree driver is the one with an hexadecimal chain in the name, e.g.,
+`sgx_linux_x64_driver_2.11.054c9c4c.bin`.
+
+This tutorial has been written and tested with the Intel SGX SDK version 2.17:
+- [driver](https://download.01.org/intel-sgx/sgx-linux/2.17/distro/ubuntu20.04-server/sgx_linux_x64_driver_2.11.054c9c4c.bin)
+- [sdk](https://download.01.org/intel-sgx/sgx-linux/2.17/distro/ubuntu20.04-server/sgx_linux_x64_sdk_2.17.100.3.bin)
 
 ```bash
 $ export SGX_DRIVER="sgx_linux_x64_driver_2.11.054c9c4c.bin" # the name might change; please check the above links if the download fails
@@ -144,7 +148,7 @@ $ sudo service aesmd status
   ...
 ```
 
-Third, download and install the SGX SDK in the `/opt/intel/sgxsdk` directory (again, the filename might have been updated):
+Third, download and install the SGX SDK in the `/opt/intel/sgxsdk` directory (again, the filename might be different):
 ```bash
 $ export SGX_SDK=sgx_linux_x64_sdk_2.17.100.3.bin
 $ wget https://download.01.org/intel-sgx/latest/linux-latest/distro/ubuntu20.04-server/$SGX_SDK
@@ -192,7 +196,8 @@ then ship the binary with the signed enclave to its users.
 
 Note that, by default, the `Makefile` compiles the code in hardware mode. To
 compile in simulation mode, for example if you do not have SGX-capable
-hardware, prepend `SGX_MODE=SIM` to the call to `make`:
+hardware, prepend `SGX_MODE=SIM` to the call to `make`. Note that simulation
+mode does not offer any protection to your code.
 ```bash
 $ make					# hardware mode
 $ SGX_MODE=SIM make  # simulation mode
@@ -335,6 +340,7 @@ SDK.
 First, you need to have Rust and the official Intel SGX SDK
 installed on your platform. Then you can download the Teaclave SGX SDK:
 ```bash
+$ cd <this/tutorial/root/directory>
 $ git clone https://github.com/apache/incubator-teaclave-sgx-sdk.git
 ```
 
@@ -342,6 +348,7 @@ If you have obtained this tutorial as a git repository, Teaclave is a
 submodule:
 ```bash
 $ git submodule init
+$ git submodule update
 ```
 
 The repository contains several interesting files and folders:
@@ -398,12 +405,13 @@ Important points are:
 
 By default the code is compiled in hardware mode and Rust release mode (i.e.,
 with optimisations enabled). To compile the enclave in simulation mode, change
-`SGX_MODE` in the `Makefile`. To compile the Rust code in debug mode, remove
-`--release` in `Makefile` and `enclave/Makefile`.
+`SGX_MODE` in the `Makefile` to `SGX_MODE=SW`. To compile the Rust code in
+debug mode, remove `--release` in `Makefile` and `enclave/Makefile`.
 
 To compile and run the code:
 ```
-$ make
+$ make				 # by default, compile in hardware mode
+$ SGX_MODE=SW make # force compilation in software mode
 $ cd bin/
 $ ./app
 [+] Init Enclave Successful 2!
