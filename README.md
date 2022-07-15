@@ -1,5 +1,7 @@
 # Intel SGX tutorial
 
+([ここに和訳文があります](README_jp.md))
+
 ## Introduction
 
 Cloud computing users send their code and data to the cloud provider,
@@ -105,12 +107,20 @@ First, install the driver. There exists 3 versions: (i) in-kernel driver,
 included in Linux since v5.11; (ii) DCAP driver; and (iii) out-of-tree driver.
 For production environments, the in-kernel or DCAP driver is to be prefered.
 For debugging and ease of use, as in this tutorial, we will use the out-of-tree
-driver:
+driver.
+
+The driver and documentation can be found
+[here](https://download.01.org/intel-sgx/latest/linux-latest/). Please check
+this link to find the correct driver for your distribution. For example, for
+Ubuntu 20.04, the 3 driver versions are located
+[here](https://download.01.org/intel-sgx/latest/linux-latest/distro/ubuntu20.04-server/). The out-of-tree driver is the one with an hexadecimal chain in the name, e.g., `sgx_linux_x64_driver_2.11.054c9c4c.bin`.
+
 ```bash
+$ export SGX_DRIVER="sgx_linux_x64_driver_2.11.054c9c4c.bin" # the name might change; please check the above links if the download fails
 $ sudo apt-get install build-essential ocaml automake autoconf libtool wget python libssl-dev
-$ wget - https://download.01.org/intel-sgx/latest/linux-latest/distro/ubuntu20.04-server/sgx_linux_x64_driver_2.11.0_0373e2e.bin
-$ chmod +x sgx_linux_x64_driver_2.11.0_0373e2e.bin
-$ sudo ./ sgx_linux_x64_driver_2.11.0_0373e2e.bin
+$ wget https://download.01.org/intel-sgx/latest/linux-latest/distro/ubuntu20.04-server/$SGX_DRIVER
+$ chmod +x $SGX_DRIVER
+$ sudo ./$SGX_DRIVER
 ```
 Once the installation is complete, a character device `/dev/isgx` should
 appear and an uninstall script has been placed in `/opt/intel/sgxdriver`.
@@ -236,6 +246,7 @@ enclave upon an `ecall` or `ocall`. The most useful identifiers are:
  - `user_check`: data movement is left to the developer;
  - `string`: data is a null-byte terminated string;
  - `size=x`: `x` bytes will be copied.
+
 Note that the security of the enclave heavily depends on the security of its
 interface, so please be careful when choosing the identifiers. For example,
 `user_check` makes the implementation easier, but an attacker might be able to
@@ -767,3 +778,12 @@ introduction in 2015. We list here a few interesting ones:
   common interface across different TEE technologies;
 - the [Fortanix Rust SDK](https://edp.fortanix.com/), an alternative to the
   Teaclave SGX SDK.
+
+## Acknowledgements
+
+We thank the Teaclave SGX SDK discord channel for their feedback as well as
+Hajime Tazaki for his help proof-reading and translating this tutorial in
+Japanese.
+
+This tutorial is an updated and extended version of a [previous blog
+post](https://lsds.doc.ic.ac.uk/content/writing-secure-cloud-applications-using-intel-sgx)
