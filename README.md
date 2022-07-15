@@ -144,18 +144,19 @@ $ sudo service aesmd status
   ...
 ```
 
-Third, download and install the SGX SDK in the `/opt/intel/sgxsdk` directory:
+Third, download and install the SGX SDK in the `/opt/intel/sgxsdk` directory (again, the filename might have been updated):
 ```bash
-$ wget https://download.01.org/intel-sgx/latest/linux-latest/distro/ubuntu20.04-server/sgx_linux_x64_sdk_2.16.100.4.bin
-$ chmod +x sgx_linux_x64_sdk_2.16.100.4.bin
-$ sudo ./sgx_linux_x64_sdk_2.16.100.4.bin --prefix /opt/intel
+$ export SGX_SDK=sgx_linux_x64_sdk_2.17.100.3.bin
+$ wget https://download.01.org/intel-sgx/latest/linux-latest/distro/ubuntu20.04-server/$SGX_SDK
+$ chmod +x $SGX_SDK
+$ sudo ./$SGX_SDK --prefix /opt/intel
 ```
 
 The SGX SDK is now installed in `/opt/intel/sgxsdk`. You can find several code
 examples in `/opt/intel/sgxsdk/SampleCode`. To set all environment variables,
 in particular to get access to the debugger, run the following command:
 ```bash
-$ source /opt/intel/sgxsdk
+$ source /opt/intel/sgxsdk/environment
 ```
 
 For more information, please refer to the [official
@@ -781,9 +782,7 @@ introduction in 2015. We list here a few interesting ones:
 
 ## Acknowledgements
 
-We thank the Teaclave SGX SDK discord channel for their feedback as well as
-Hajime Tazaki for his help proof-reading and translating this tutorial in
-Japanese.
+We thank the Teaclave SGX SDK discord channel for their feedback.
 
 This tutorial is an updated and extended version of a [previous blog
 post](https://lsds.doc.ic.ac.uk/content/writing-secure-cloud-applications-using-intel-sgx)
