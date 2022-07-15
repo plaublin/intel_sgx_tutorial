@@ -19,12 +19,12 @@ the software (including the OS and hypervisor) as well as the hardware
 Among these diferent TEEs, the most popular is Intel Software Guard Extensions
 (SGX). Intel SGX offers /enclaves/ to the developer, which are isolated from
 the rest of the system to handle sensitive data (see figure below). The enclave
-memory, called the /Enclave Page Cache/ (EPC), is always encrypted when stored
-outside of the main CPU, with the Intel MEE in charge of transparent
-encryption/decryption upon data movement. The EPC is shared between all the
-running enclaves, but each enclave memory pages are isolated from other
-enclaves. This means that inter-enclaves secure communication needs to be
-implemented by the developer.
+memory is always encrypted when stored outside of the main CPU, in a special
+region of DRAM called /Enclave Page Cache/ (EPC). The Intel Memory Encryption
+Engine (MEE) in charge of transparent encryption/decryption upon data movement.
+The EPC is shared between all the running enclaves, but each enclave memory
+pages are isolated from other enclaves. This means that inter-enclaves secure
+communication needs to be implemented by the developer.
 
 <img src="enclave.jpg" alt="Enclave architecture.">
 
@@ -121,7 +121,7 @@ This tutorial has been written and tested with the Intel SGX SDK version 2.17:
 
 ```bash
 $ export SGX_DRIVER="sgx_linux_x64_driver_2.11.054c9c4c.bin" # the name might change; please check the above links if the download fails
-$ sudo apt-get install build-essential ocaml automake autoconf libtool wget python libssl-dev
+$ sudo apt install build-essential ocaml automake autoconf libtool wget python libssl-dev
 $ wget https://download.01.org/intel-sgx/latest/linux-latest/distro/ubuntu20.04-server/$SGX_DRIVER
 $ chmod +x $SGX_DRIVER
 $ sudo ./$SGX_DRIVER
@@ -134,9 +134,9 @@ Intel SGX packages (the last line installs debug symbols packages):
 ```bash
 $ echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu focal main' | sudo tee /etc/apt/sources.list.d/intel-sgx.list
 $ wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | sudo apt-key add
-$ sudo apt-get update
+$ sudo apt update
 $ sudo apt install libsgx-epid libsgx-quote-ex libsgx-aesm-launch-plugin
-$ sudo apt-get install libsgx-urts-dbgsym libsgx-enclave-common-dbgsym
+$ sudo apt install libsgx-urts-dbgsym libsgx-enclave-common-dbgsym
 ```
 
 The `aesmd` service should now be running:
@@ -286,8 +286,30 @@ The code can be found in the `sgx_sqlite` directory.
 `Makefile.nosgx` compiles the code without SGX support. With the generated
 binary, you can create an SQL database and execute arbitrary statements,
 entered from the command line (one statement per line). The database can either
-be stored in memory (using ":memory:" as its name) or on disk. The `input.txt`
-file contains a few SQL statements that you can use to test it.
+be stored in memory (using ":memory:" as its name) or on disk.
+
+The `input.txt` file contains a few SQL statements that you can use to test it:
+```bash
+$ cat input.txt
+CREATE TABLE towns ( town VARCHAR(64), county VARCHAR(64), state VARCHAR(2) NOT NULL);
+
+INSERT INTO towns VALUES ('Billerica','Middlesex','MA');
+INSERT INTO towns VALUES ('Buffalo','Erie','NY');
+INSERT INTO towns VALUES ('Bay View','Erie','OH');
+
+SELECT count(*) AS total FROM towns;
+SELECT town, state FROM towns ORDER BY town;
+QUIT
+
+$ ./main_nosgx :memory: < input.txt
+Opening Sqlite database (:memory:)...
+Enter SQL commands; QUIT to terminate the program.
+> > > > > > >  3 |
+>  Bay View | OH |
+ Billerica | MA |
+ Buffalo | NY |
+>
+```
 
 #### Enclave shim layer
 
@@ -342,6 +364,8 @@ installed on your platform. Then you can download the Teaclave SGX SDK:
 ```bash
 $ cd <this/tutorial/root/directory>
 $ git clone https://github.com/apache/incubator-teaclave-sgx-sdk.git
+$ cd intel_sgx_tutorial
+$ git checkout 08264d6bff679d6047e5e9bc36058b4475c58ed4 $ this commit is known to work
 ```
 
 If you have obtained this tutorial as a git repository, Teaclave is a
@@ -349,6 +373,8 @@ submodule:
 ```bash
 $ git submodule init
 $ git submodule update
+$ cd intel_sgx_tutorial
+$ git checkout 08264d6bff679d6047e5e9bc36058b4475c58ed4 $ this commit is known to work
 ```
 
 The repository contains several interesting files and folders:
@@ -363,8 +389,9 @@ The repository contains several interesting files and folders:
 
 ### Hello World!
 
-This section reuses the `hello-rust` application in the `samplecode` directory.
-This sample application code structure is:
+This section reuses the `hello-rust` application in the
+`incubator-teaclave-sgx-sdk/samplecode` directory. This sample application code
+structure is:
 ```bash
 .
 ├── Makefile
@@ -411,7 +438,7 @@ debug mode, remove `--release` in `Makefile` and `enclave/Makefile`.
 To compile and run the code:
 ```
 $ make				 # by default, compile in hardware mode
-$ SGX_MODE=SW make # force compilation in software mode
+$ SGX_MODE=SW make # or force compilation in software mode
 $ cd bin/
 $ ./app
 [+] Init Enclave Successful 2!
@@ -522,7 +549,8 @@ file in `rust_enclave`.
 
 To compile and run the code:
 ```bash
-$ make
+$ make				 # by default, compile in hardware mode
+$ SGX_MODE=SW make # or force compilation in software mode
 $ cd bin
 $ ./app
 [+] Init Enclave Successful 2!
