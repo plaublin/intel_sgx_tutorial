@@ -88,20 +88,20 @@ abstractions over the SGX assembly instructions. In particular, it provides:
 	- random number generation;
 	- etc.
 
-A more detailed list of functionalities can be found in the [Developer
-Reference](https://download.01.org/intel-sgx/sgx-linux/2.16/docs/Intel_SGX_Developer_Reference_Linux_2.16_Open_Source.pdf).
+	A more detailed list of functionalities can be found in the [Developer
+	Reference](https://download.01.org/intel-sgx/sgx-linux/2.16/docs/Intel_SGX_Developer_Reference_Linux_2.16_Open_Source.pdf).
 
-Enclave transitions (`ecalls` or `ocalls`) are a performance bottleneck and
-should be avoided if possible. Techniques such as asynchronous calls
-implemented in [TaLoS](https://github.com/lsds/TaLoS), or switchless calls
-implemented in the SGX SDK (via the `transition_using_threads`; see Intel
-documentation) can help to alleviate this problem.
+	Enclave transitions (`ecalls` or `ocalls`) are a performance bottleneck and
+	should be avoided if possible. Techniques such as asynchronous calls
+	implemented in [TaLoS](https://github.com/lsds/TaLoS), or switchless calls
+	implemented in the SGX SDK (via the `transition_using_threads`; see Intel
+	documentation) can help to alleviate this problem.
 
 ### Installation
 
 The installation is a multi-steps process.
 
-First, install the driver. There exists 3 versions: (i) in-kernel driver,
+First, we need to install the driver. There exists 3 versions: (i) in-kernel driver,
 included in Linux since v5.11; (ii) DCAP driver; and (iii) out-of-tree driver.
 For production environments, the in-kernel or DCAP driver is to be prefered.
 For debugging and ease of use, as in this tutorial, we will use the out-of-tree
@@ -119,6 +119,7 @@ This tutorial has been written and tested with the Intel SGX SDK version 2.17:
 - [driver](https://download.01.org/intel-sgx/sgx-linux/2.17/distro/ubuntu20.04-server/sgx_linux_x64_driver_2.11.054c9c4c.bin)
 - [sdk](https://download.01.org/intel-sgx/sgx-linux/2.17/distro/ubuntu20.04-server/sgx_linux_x64_sdk_2.17.100.3.bin)
 
+Please follow these instructions to install the driver:
 ```bash
 $ export SGX_DRIVER="sgx_linux_x64_driver_2.11.054c9c4c.bin" # the name might change; please check the above links if the download fails
 $ sudo apt install build-essential ocaml automake autoconf libtool wget python libssl-dev
@@ -143,9 +144,9 @@ The `aesmd` service should now be running:
 ```bash
 $ sudo service aesmd status
 ● aesmd.service - Intel(R) Architectural Enclave Service Manager
-     Loaded: loaded (/lib/systemd/system/aesmd.service; enabled; vendor preset: enabled)
-     Active: active (running)
-  ...
+Loaded: loaded (/lib/systemd/system/aesmd.service; enabled; vendor preset: enabled)
+Active: active (running)
+...
 ```
 
 Third, download and install the SGX SDK in the `/opt/intel/sgxsdk` directory (again, the filename might be different):
@@ -168,14 +169,14 @@ documentation](https://download.01.org/intel-sgx/sgx-linux/2.16/docs/Intel_SGX_S
 
 ### Hello World!
 
-As always, we start with a simple "Hello World!" application, located in the
-`hello_world` directory. It contains the following files:
+As always, we start with a simple "Hello World!" application, located in
+`<this/tutorial/root/directory>/hellow_world`. It contains the following files:
  - `main.c`: untrusted code, main entry point;
  - `enclave.c`: enclave code;
  - `enclave.edl`: contains the enclave interface (list of `ecalls` and `ocalls`);
  - `enclave.config.xml`: enclave configuration file. In particular it defines the
-   maximal numbers of concurrent threads inside the enclave (`TCSNum`) and the
-   heap maximal size in bytes (`HeapMaxSize`);
+ maximal numbers of concurrent threads inside the enclave (`TCSNum`) and the
+ heap maximal size in bytes (`HeapMaxSize`);
  - `enclave.lds`: necessary to create the enclave shared library;
  - `enclave_private_test.pem`: private key used to sign the enclave;
  - `Makefile`.
@@ -194,7 +195,7 @@ then ship the binary with the signed enclave to its users.
 
 <img src="compilation_process.jpg" alt="Compilation process.">
 
-Note that, by default, the `Makefile` compiles the code in hardware mode. To
+By default, the `Makefile` compiles the code in hardware mode. To
 compile in simulation mode, for example if you do not have SGX-capable
 hardware, prepend `SGX_MODE=SIM` to the call to `make`. Note that simulation
 mode does not offer any protection to your code.
@@ -244,26 +245,26 @@ that will then execute the appropriate function. This is the purpose of the
 In the `ocall` argument, `[in, string]` defines how data is copied from/to the
 enclave upon an `ecall` or `ocall`. The most useful identifiers are:
  - `in`: data is copied to the called environment at the beginning of the call,
-	i.e., to the untrusted environment for an `ocall` and to the enclave for an
-	`ecall`;
+ i.e., to the untrusted environment for an `ocall` and to the enclave for an
+ `ecall`;
  - `out`: data is copied out of the called environment after the call, i.e.,
-	out of the untrusted environment for an `ocall` and out of the enclave for an
- 	`ecall`;
+ out of the untrusted environment for an `ocall` and out of the enclave for an
+ `ecall`;
  - `user_check`: data movement is left to the developer;
  - `string`: data is a null-byte terminated string;
  - `size=x`: `x` bytes will be copied.
 
-Note that the security of the enclave heavily depends on the security of its
-interface, so please be careful when choosing the identifiers. For example,
-`user_check` makes the implementation easier, but an attacker might be able to
-launch a time-of-check to time-of-use attack.
+ Note that the security of the enclave heavily depends on the security of its
+ interface, so please be careful when choosing the identifiers. For example,
+ `user_check` makes the implementation easier, but an attacker might be able to
+ launch a time-of-check to time-of-use attack.
 
-Two last points that are not present in our `enclave.edl` but important to note
-are:
+ Two last points that are not present in our `enclave.edl` but important to note
+ are:
  - it is necessary to specify which `ecalls` an `ocall` can make, with this
-	syntax: `ocall_xxx() allow(ecall_xxx);`;
+ syntax: `ocall_xxx() allow(ecall_xxx);`;
  - `errno` is not propagated by default. To propagate it, add the
-	`propagate_errno` keyword after the `ocall`: `ocall_xxx() propagate_errno;`.
+ `propagate_errno` keyword after the `ocall`: `ocall_xxx() propagate_errno;`.
 
 #### Enclave code
 
@@ -279,7 +280,7 @@ database inside an SGX enclave. In addition, it will be possible to execute the
 same code with or without SGX, which makes development, debugging and
 performance evaluation easier.
 
-The code can be found in the `sgx_sqlite` directory.
+The code can be found in `<this/tutorial/root/directory>/sgx_sqlite`.
 
 #### Without SGX
 
@@ -306,8 +307,8 @@ Opening Sqlite database (:memory:)...
 Enter SQL commands; QUIT to terminate the program.
 > > > > > > >  3 |
 >  Bay View | OH |
- Billerica | MA |
- Buffalo | NY |
+Billerica | MA |
+Buffalo | NY |
 >
 ```
 
@@ -316,20 +317,20 @@ Enter SQL commands; QUIT to terminate the program.
 Compared to `hello_world`, you will find several new files that will
 help us to build a wrapper around the in-enclave library:
  - `enclaveshim_ecalls.[ch]`: initialization of the enclave and implementation
-	of the `ecalls`, on the untrusted side;
+ of the `ecalls`, on the untrusted side;
  - `enclaveshim_ocalls.[ch]`: implementation of the `ocalls`, on the trusted
-	side;
+ side;
  - `ocalls.[ch]`: implementation of the `ocalls`, on the untrusted side;
  - `enclaveshim_log.h`: provides two macros to print debug messages when
-	entering and leaving each `ecall` and `ocall`. These macros have to be
-	manually called by your code. To activate the messages, you need to define
-	the `LOG_ENCLAVE_ENTER_EXIT` macro;
+ entering and leaving each `ecall` and `ocall`. These macros have to be
+ manually called by your code. To activate the messages, you need to define
+ the `LOG_ENCLAVE_ENTER_EXIT` macro;
  - `user_types.h`: defines several types needed by the SGX SDK tools to build
-	the shim code for `ecalls` and `ocalls`. These types are used in the
-	`ecalls` and `ocalls` prototypes;
+ the shim code for `ecalls` and `ocalls`. These types are used in the
+ `ecalls` and `ocalls` prototypes;
 
-The figure below depicts the architecture of the source code: (i) the enclave
-library is composed of `database.[c+h]` and `sqlite3.[c+h]` files; (ii) the
+ The figure below depicts the architecture of the source code: (i) the enclave
+ library is composed of `database.[ch]` and `sqlite3.[ch]` files; (ii) the
 enclave wrapper is composed of the `enclaveshim_*` and `ocalls.[ch]` files; and
 (iii) the main function is present inside `main.c`. The enclave shim for
 `ecalls` initializes the enclave and redefines all the functions that are
@@ -364,16 +365,16 @@ installed on your platform. Then you can download the Teaclave SGX SDK:
 ```bash
 $ cd <this/tutorial/root/directory>
 $ git clone https://github.com/apache/incubator-teaclave-sgx-sdk.git
-$ cd intel_sgx_tutorial
+$ cd incubator-teaclave-sgx-sdk
 $ git checkout 08264d6bff679d6047e5e9bc36058b4475c58ed4 $ this commit is known to work
 ```
 
 If you have obtained this tutorial as a git repository, Teaclave is a
 submodule:
 ```bash
-$ git submodule init
-$ git submodule update
+$ git submodule update --init
 $ cd intel_sgx_tutorial
+$ cd incubator-teaclave-sgx-sdk
 $ git checkout 08264d6bff679d6047e5e9bc36058b4475c58ed4 $ this commit is known to work
 ```
 
@@ -479,7 +480,7 @@ extern {
 }
 ```
 
-The `Enclave.edl` file then specifies the C interface:
+The enclave interface definition file (`enclave/Enclave.edl`) then specifies the C interface:
 ```c
 enclave {
     from "sgx_tstd.edl" import *;
@@ -640,8 +641,8 @@ that have to be passed across the interface.
 ##### C Bindgen
 
 The second solution is to use `bindgen` to generate Rust definition from a C
-structure. For this we will create a file `enclave/my_struct.h` with the
-following content:
+structure. For this, the C header file `enclave/my_struct.h` has been created
+with the following content:
 ```c
 #ifndef MY_STRUCT_H_
 #define MY_STRUCT_H_
@@ -671,20 +672,21 @@ pub struct MyStruct {
 ...
 ```
 
-We can now copy this definition in our code as well as link `my_struct.h` in
-the `Enclave.edl` file:
+This definition is then copied into our code. We have also included
+`my_struct.h` in `enclave/Enclave.edl`:
 ```c
 include "my_struct.h"
 ```
-We also modify the `Makefile` so that the compilation process finds our header
-file:
+
+Also, the `Makefile` has been modified so that the compilation process finds
+our header file:
 ```make
 app/Enclave_u.o: $(Enclave_EDL_Files)
 	@$(CC) $(App_C_Flags) -I./enclave/ -c app/Enclave_u.c -o $@
 	@echo "CC   <=  $<"
 ```
 
-Finally we can write and call our `ecall`:
+Finally our `ecall` can be written and called:
 ```rust
 // in enclave/Enclave.edl
 public void ecall_bindgen_send_datastructure(struct MyStruct s);
@@ -713,7 +715,7 @@ serialization/deserialization of our data structure. ([This
 page](https://github.com/mesalock-linux) lists crates that have been ported to
 SGX.)
 
-We need to modify both `Cargo.toml` file to add the dependency:
+Both `Cargo.toml` files have been modified to add the dependency:
 ```toml
 # in app/Cargo.toml
 [dependencies]
@@ -727,7 +729,7 @@ bincode = { git = "https://github.com/mesalock-linux/bincode-sgx.git" }
 serde = { git = "https://github.com/mesalock-linux/serde-sgx.git", features = ["derive"] }
 ```
 
-We can then write the `ecall`:
+The following code is our `ecall`:
 ```rust
 // In app/src/main.rs
 extern crate bincode;
@@ -780,7 +782,7 @@ pub extern "C" fn ecall_bincode_send_datastructure(serialized: *const u8, len: u
 }
 ```
 
-And finally call it:
+And finally this code calls it:
 ```rust
 // In app/src/main.rs
 let s = MyStruct {
