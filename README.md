@@ -16,15 +16,15 @@ integrity) over the code and data even in an untrusted environment where both
 the software (including the OS and hypervisor) as well as the hardware
 (excluding the CPU package) are untrusted.
 
-Among these diferent TEEs, the most popular is Intel Software Guard Extensions
+Among these different TEEs, the most popular is Intel Software Guard Extensions
 (SGX). Intel SGX offers /enclaves/ to the developer, which are isolated from
 the rest of the system to handle sensitive data (see figure below). The enclave
 memory is always encrypted when stored outside of the main CPU, in a special
 region of DRAM called /Enclave Page Cache/ (EPC). The Intel Memory Encryption
-Engine (MEE) in charge of transparent encryption/decryption upon data movement.
-The EPC is shared between all the running enclaves, but each enclave memory
-pages are isolated from other enclaves. This means that inter-enclaves secure
-communication needs to be implemented by the developer.
+Engine (MEE) is then in charge of transparent encryption/decryption upon data
+movement. The EPC is shared between all the running enclaves, but each enclave
+memory pages are isolated from other enclaves. This means that inter-enclaves
+secure communication needs to be implemented by the developer.
 
 <img src="enclave.jpg" alt="Enclave architecture.">
 
