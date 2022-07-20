@@ -157,9 +157,9 @@ $ chmod +x $SGX_SDK
 $ sudo ./$SGX_SDK --prefix /opt/intel
 ```
 
-The SGX SDK is now installed in `/opt/intel/sgxsdk`. You can find several code
-examples in `/opt/intel/sgxsdk/SampleCode`. To set all environment variables,
-in particular to get access to the debugger, run the following command:
+The SGX SDK is now installed in `/opt/intel/sgxsdk`. To set all environment
+variables, in particular to get access to the debugger, run the following
+command:
 ```bash
 $ source /opt/intel/sgxsdk/environment
 ```
@@ -169,8 +169,10 @@ documentation](https://download.01.org/intel-sgx/sgx-linux/2.16/docs/Intel_SGX_S
 
 ### Hello World!
 
-As always, we start with a simple "Hello World!" application, located in
-`<this/tutorial/root/directory>/hellow_world`. It contains the following files:
+As always, we start with a simple "Hello World!" application, located in the
+`hello_world` directory in [this tutorial source
+code](https://github.com/plaublin/intel_sgx_tutorial/) . It contains the
+following files:
  - `main.c`: untrusted code, main entry point;
  - `enclave.c`: enclave code;
  - `enclave.edl`: contains the enclave interface (list of `ecalls` and `ocalls`);
@@ -373,9 +375,6 @@ If you have obtained this tutorial as a git repository, Teaclave is a
 submodule:
 ```bash
 $ git submodule update --init
-$ cd intel_sgx_tutorial
-$ cd incubator-teaclave-sgx-sdk
-$ git checkout 08264d6bff679d6047e5e9bc36058b4475c58ed4 $ this commit is known to work
 ```
 
 The repository contains several interesting files and folders:
@@ -801,6 +800,11 @@ let result = unsafe {
 ```
 
 ## Further readings
+
+Both the Intel SGX and Teaclave SDKs contain various sample code to help
+developers create their own applications:
+- in `/opt/intel/sgdsdk/SampleCode` for the Intel SGX SDK;
+- in `incubator-teaclave-sgx-sdk/samplecode` for the Teaclave SGX SDK.
 
 Intel SGX has been the focus of a large number of works since its
 introduction in 2015. We list here a few interesting ones:
