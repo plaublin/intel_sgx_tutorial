@@ -322,7 +322,7 @@ libraries have first been resolved by using the headers of the system.
 In summary,
 - to compile without SGX: `make -f Makefile.nosgx`;
 - to compile with SGX (hardware mode): `make -f Makefile.sgx`;
-- to compile with SGX (software mode): `SGX_MODE=SIM make -f Makefile.sgx`.
+- to compile with SGX (simulation mode): `SGX_MODE=SIM make -f Makefile.sgx`.
 
 #### How to run the application
 
