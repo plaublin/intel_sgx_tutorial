@@ -102,7 +102,8 @@ abstractions over the SGX assembly instructions. In particular, it provides:
 The installation is a multi-steps process. If your hardware supports Intel SGX,
 you need to install the driver. This step is not necessary if your hardware
 does not support Intel SGX and/or you will run the examples in simulation mode.
-In all cases you need to follow the instructions to install the Intel SGX SDK.
+In all cases you need to follow the instructions to install a few extra packages
+and the Intel SGX SDK.
 
 This tutorial has been written and tested with the Intel SGX SDK version 2.17:
 - [driver](https://download.01.org/intel-sgx/sgx-linux/2.17/distro/ubuntu20.04-server/sgx_linux_x64_driver_2.11.054c9c4c.bin)
@@ -137,9 +138,12 @@ $ sudo ./$SGX_DRIVER
 Once the installation is complete, a character device `/dev/isgx` should
 appear and an uninstall script has been placed in `/opt/intel/sgxdriver`.
 
+
+#### A few extra packages and aesmd service
+
 The following steps are mandatory for both hardware and simulation modes.
 
-Second, we will add the Intel SGX SDK repository to our package manager and download
+We will add the Intel SGX SDK repository to our package manager and download
 Intel SGX packages (the last line installs debug symbols packages).
 ```bash
 $ echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu focal main' | sudo tee /etc/apt/sources.list.d/intel-sgx.list
@@ -149,7 +153,7 @@ $ sudo apt install libsgx-epid libsgx-quote-ex libsgx-aesm-launch-plugin
 $ sudo apt install libsgx-urts-dbgsym libsgx-enclave-common-dbgsym
 ```
 
-The `aesmd` service should now be running:
+If you have SGX-capable hardware, the `aesmd` service should now be running:
 ```bash
 $ sudo service aesmd status
 ● aesmd.service - Intel(R) Architectural Enclave Service Manager
@@ -160,10 +164,7 @@ Active: active (running)
 
 #### Intel SGX SDK
 
-We need to download and install the SGX SDK.
-
-We will install it in the `/opt/intel/sgxsdk` directory (the filename might be
-different, please check the links on Intel website):
+We need to download and install the SGX SDK. We will install it in the `/opt/intel/sgxsdk` directory:
 ```bash
 $ export SGX_SDK=sgx_linux_x64_sdk_2.17.100.3.bin
 $ wget https://download.01.org/intel-sgx/sgx-linux/2.17/distro/ubuntu20.04-server/$SGX_SDK
@@ -309,10 +310,7 @@ Note that this version of SQLite supports only upper-case SQL statements, e.g.,
 
 #### How to compile the application
 
-`Makefile.nosgx` compiles the code without SGX support. With the generated
-binary, you can create an SQL database and execute arbitrary statements,
-entered from the command line (one statement per line). The database can either
-be stored in memory (using ":memory:" as its name) or on disk.
+`Makefile.nosgx` compiles the code without SGX support.
 
 `Makefile.sgx` compiles the code with Intel SGX support. It also defines the
 `COMPILE_WITH_INTEL_SGX` macro that you can use to detect if the code has to be
@@ -324,12 +322,15 @@ libraries have first been resolved by using the headers of the system.
 In summary,
 - to compile without SGX: `make -f Makefile.nosgx`;
 - to compile with SGX (hardware mode): `make -f Makefile.sgx`;
-- to compile with SGX (software mode): `SGX_MODE=SIM make -f Makefile.sgx`;
-- the binary compiled without SGX is called `main_nosgx` while the binary compiled with SGX is called `app_sgx`.
+- to compile with SGX (software mode): `SGX_MODE=SIM make -f Makefile.sgx`.
 
 #### How to run the application
 
-The `input.txt` file contains a few SQL statements that you can use to test it:
+With the generated binary, `main_nosgx` without SGX or `app_sgx` with SGX, you
+can create an SQL database and execute arbitrary statements, entered from the
+command line (one statement per line). The database can either be stored in
+memory (using ":memory:" as its name) or on disk. The `input.txt` file contains
+a few SQL statements that you can use to test it:
 ```bash
 $ cat input.txt
 CREATE TABLE towns ( town VARCHAR(64), county VARCHAR(64), state VARCHAR(2) NOT NULL);
