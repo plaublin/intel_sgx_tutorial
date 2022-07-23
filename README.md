@@ -47,7 +47,7 @@ paper](https://community.intel.com/legacyfs/online/drupal_files/managed/57/0e/ww
 Intel SGX provides a set of assembly instructions to develop an enclave. For
 ease of use, Intel has developed the [SGX
 SDK](https://software.intel.com/en-us/sgx-sdk/) for C/C++ applications. The
-idea when developing with Intel SGX is to execute only parts of your
+idea when developing with Intel SGX is to execute only parts of our
 application inside the enclave, in order to minimize the attack surface. Note
 that some projects, such as SCONE or SGX-LKL, execute an entire application
 inside the enclave, which have their own advantages and drawbacks. Please see
@@ -68,7 +68,7 @@ Apache Teaclave SGX or Fortanix EDP SDKs.
 
 In this tutorial we will write simple SGX applications both in C/C++ and Rust,
 leveraging the official Intel SGX and Apache Teaclave SDKs. We will use the
-Intel SGX SDK version 2.16, which is the latest release at the time of writing
+Intel SGX SDK version 2.17, which is the latest release at the time of writing
 this tutorial. We consider you are running a recent version of Ubuntu (e.g.,
 20.04 LTS). Having access to real SGX hardware is preferable but not mandatory:
 the SDK also provides a software mode that emulates the enclave behaviour.
@@ -99,13 +99,24 @@ abstractions over the SGX assembly instructions. In particular, it provides:
 
 ### Installation
 
-The installation is a multi-steps process.
+The installation is a multi-steps process. If your hardware supports Intel SGX,
+you need to install the driver. This step is not necessary if your hardware
+does not support Intel SGX and/or you will run the examples in simulation mode.
+In all cases you need to follow the instructions to install the Intel SGX SDK.
 
-First, we need to install the driver. There exists 3 versions: (i) in-kernel driver,
-included in Linux since v5.11; (ii) DCAP driver; and (iii) out-of-tree driver.
-For production environments, the in-kernel or DCAP driver is to be prefered.
-For debugging and ease of use, as in this tutorial, we will use the out-of-tree
-driver.
+This tutorial has been written and tested with the Intel SGX SDK version 2.17:
+- [driver](https://download.01.org/intel-sgx/sgx-linux/2.17/distro/ubuntu20.04-server/sgx_linux_x64_driver_2.11.054c9c4c.bin)
+- [sdk](https://download.01.org/intel-sgx/sgx-linux/2.17/distro/ubuntu20.04-server/sgx_linux_x64_sdk_2.17.100.3.bin)
+
+For more information, please refer to the [official
+documentation](https://download.01.org/intel-sgx/sgx-linux/2.16/docs/Intel_SGX_SW_Installation_Guide_for_Linux.pdf).
+
+#### Intel SGX driver
+
+There exists 3 versions: (i) in-kernel driver, included in Linux since v5.11;
+(ii) DCAP driver; and (iii) out-of-tree driver. For production environments,
+the in-kernel or DCAP driver is to be prefered. For debugging and ease of use,
+as in this tutorial, we will use the out-of-tree driver.
 
 The latest driver and documentation can be found
 [here](https://download.01.org/intel-sgx/latest/linux-latest/). Please check
@@ -115,23 +126,21 @@ Ubuntu 20.04, the 3 driver versions are located
 The out-of-tree driver is the one with an hexadecimal chain in the name, e.g.,
 `sgx_linux_x64_driver_2.11.054c9c4c.bin`.
 
-This tutorial has been written and tested with the Intel SGX SDK version 2.17:
-- [driver](https://download.01.org/intel-sgx/sgx-linux/2.17/distro/ubuntu20.04-server/sgx_linux_x64_driver_2.11.054c9c4c.bin)
-- [sdk](https://download.01.org/intel-sgx/sgx-linux/2.17/distro/ubuntu20.04-server/sgx_linux_x64_sdk_2.17.100.3.bin)
-
 Please follow these instructions to install the driver:
 ```bash
-$ export SGX_DRIVER="sgx_linux_x64_driver_2.11.054c9c4c.bin" # the name might change; please check the above links if the download fails
+$ export SGX_DRIVER="sgx_linux_x64_driver_2.11.054c9c4c.bin" 
 $ sudo apt install build-essential ocaml automake autoconf libtool wget python libssl-dev
-$ wget https://download.01.org/intel-sgx/latest/linux-latest/distro/ubuntu20.04-server/$SGX_DRIVER
+$ wget https://download.01.org/intel-sgx/sgx-linux/2.17/distro/ubuntu20.04-server/$SGX_DRIVER
 $ chmod +x $SGX_DRIVER
 $ sudo ./$SGX_DRIVER
 ```
 Once the installation is complete, a character device `/dev/isgx` should
 appear and an uninstall script has been placed in `/opt/intel/sgxdriver`.
 
-Second, add the Intel SGX SDK repository to your package manager and download
-Intel SGX packages (the last line installs debug symbols packages):
+The following steps are mandatory for both hardware and simulation modes.
+
+Second, we will add the Intel SGX SDK repository to our package manager and download
+Intel SGX packages (the last line installs debug symbols packages).
 ```bash
 $ echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu focal main' | sudo tee /etc/apt/sources.list.d/intel-sgx.list
 $ wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | sudo apt-key add
@@ -149,10 +158,15 @@ Active: active (running)
 ...
 ```
 
-Third, download and install the SGX SDK in the `/opt/intel/sgxsdk` directory (again, the filename might be different):
+#### Intel SGX SDK
+
+We need to download and install the SGX SDK.
+
+We will install it in the `/opt/intel/sgxsdk` directory (the filename might be
+different, please check the links on Intel website):
 ```bash
 $ export SGX_SDK=sgx_linux_x64_sdk_2.17.100.3.bin
-$ wget https://download.01.org/intel-sgx/latest/linux-latest/distro/ubuntu20.04-server/$SGX_SDK
+$ wget https://download.01.org/intel-sgx/sgx-linux/2.17/distro/ubuntu20.04-server/$SGX_SDK
 $ chmod +x $SGX_SDK
 $ sudo ./$SGX_SDK --prefix /opt/intel
 ```
@@ -163,9 +177,6 @@ command:
 ```bash
 $ source /opt/intel/sgxsdk/environment
 ```
-
-For more information, please refer to the [official
-documentation](https://download.01.org/intel-sgx/sgx-linux/2.16/docs/Intel_SGX_SW_Installation_Guide_for_Linux.pdf).
 
 ### Hello World!
 
@@ -201,10 +212,10 @@ By default, the `Makefile` compiles the code in hardware mode. To
 compile in simulation mode, for example if you do not have SGX-capable
 hardware, prepend `SGX_MODE=SIM` to the call to `make`. Note that simulation
 mode does not offer any protection to your code.
-```bash
-$ make					# hardware mode
-$ SGX_MODE=SIM make  # simulation mode
-```
+
+In summary,
+- to compile in hardware mode: `make`;
+- to compile in simulation mode: `SGX_MODE=SIM make`.
 
 #### Execution
 
@@ -215,6 +226,16 @@ similar.
 $ ./app
 Hello World!
 ```
+
+The following error can be encountered if you compile for hardware mode but do
+not have SGX hardware:
+```
+$ ./app
+Info: Please make sure SGX module is enabled in the BIOS, and install SGX driver afterwards.
+Error: Invalid SGX device.
+Cannot initialize the enclave...
+```
+To fix it: `make clean; SGX_MODE=SIM make`.
 
 #### Enclave interface
 
@@ -283,13 +304,30 @@ same code with or without SGX, which makes development, debugging and
 performance evaluation easier.
 
 The code can be found in `<this/tutorial/root/directory>/sgx_sqlite`.
+Note that this version of SQLite supports only upper-case SQL statements, e.g.,
+`CREATE` but not `create`.
 
-#### Without SGX
+#### How to compile the application
 
 `Makefile.nosgx` compiles the code without SGX support. With the generated
 binary, you can create an SQL database and execute arbitrary statements,
 entered from the command line (one statement per line). The database can either
 be stored in memory (using ":memory:" as its name) or on disk.
+
+`Makefile.sgx` compiles the code with Intel SGX support. It also defines the
+`COMPILE_WITH_INTEL_SGX` macro that you can use to detect if the code has to be
+compiled with Intel SGX or not; and pre-processes the enclave source files
+first (flag `-E`), before compiling them to object files. This step is
+necessary to ensure that all the definitions missing from the Intel SGX SDK
+libraries have first been resolved by using the headers of the system.
+
+In summary,
+- to compile without SGX: `make -f Makefile.nosgx`;
+- to compile with SGX (hardware mode): `make -f Makefile.sgx`;
+- to compile with SGX (software mode): `SGX_MODE=SIM make -f Makefile.sgx`;
+- the binary compiled without SGX is called `main_nosgx` while the binary compiled with SGX is called `app_sgx`.
+
+#### How to run the application
 
 The `input.txt` file contains a few SQL statements that you can use to test it:
 ```bash
@@ -304,7 +342,7 @@ SELECT count(*) AS total FROM towns;
 SELECT town, state FROM towns ORDER BY town;
 QUIT
 
-$ ./main_nosgx :memory: < input.txt
+$ ./main_nosgx :memory: < input.txt # or ./app_sgx :memory: < input.txt
 Opening Sqlite database (:memory:)...
 Enter SQL commands; QUIT to terminate the program.
 > > > > > > >  3 |
@@ -314,7 +352,7 @@ Buffalo | NY |
 >
 ```
 
-#### Enclave shim layer
+#### Enclave shim layer explanation
 
 Compared to `hello_world`, you will find several new files that will
 help us to build a wrapper around the in-enclave library:
@@ -345,15 +383,6 @@ outside of the enclave.
 
 <img src="shim_layer.jpg" alt="Enclave shim layer.">
 
-### Enclave compilation
-
-`Makefile.sgx` compiles the code with Intel SGX support. It also defines the
-`COMPILE_WITH_INTEL_SGX` macro that you can use to detect if the code has to be
-compiled with Intel SGX or not; and pre-processes the enclave source files
-first (flag `-E`), before compiling them to object files. This step is
-necessary to ensure that all the definitions missing from the Intel SGX SDK
-libraries have first been resolved by using the headers of the system.
-
 ## Teaclave SGX SDK (Rust)
 
 The [Apache Teaclave SGX SDK](https://teaclave.apache.org/) is a SGX SDK for
@@ -374,6 +403,7 @@ $ git checkout 08264d6bff679d6047e5e9bc36058b4475c58ed4 $ this commit is known t
 If you have obtained this tutorial as a git repository, Teaclave is a
 submodule:
 ```bash
+$ cd <this/tutorial/root/directory>
 $ git submodule update --init
 ```
 
@@ -435,10 +465,12 @@ with optimisations enabled). To compile the enclave in simulation mode, change
 `SGX_MODE` in the `Makefile` to `SGX_MODE=SW`. To compile the Rust code in
 debug mode, remove `--release` in `Makefile` and `enclave/Makefile`.
 
-To compile and run the code:
-```
-$ make				 # by default, compile in hardware mode
-$ SGX_MODE=SW make # or force compilation in software mode
+To compile the code, run one of these commands:
+- to compile in hardware mode: `make`;
+- to compile in simulation mode: `SGX_MODE=SW make`.
+
+To run the code:
+```bash
 $ cd bin/
 $ ./app
 [+] Init Enclave Successful 2!
@@ -446,6 +478,10 @@ This is a normal world string passed into Enclave!
 This is a in-Enclave Rust string!
 [+] say_something success...
 ```
+
+The following error can be encountered if you compile for hardware mode but do
+not have SGX hardware: `Init Enclave Failed SGX_ERROR_NO_DEVICE!`. To fix it:
+`make clean; SGX_MODE=SW make`.
 
 For most of it, both the Intel SGX SDK and Teaclave SGX SDK are used in a
 similar fashion, with similar functions modulo rust syntax. However, you will
@@ -547,10 +583,12 @@ update the `TOP_DIR`, `CUSTOM_EDL_PATH` and `CUSTOM_COMMON_PATH` variables in
 the `Makefile` at the root of the application, and copy the `rust-toolchain`
 file in `rust_enclave`.
 
-To compile and run the code:
+To compile the code, run one of these commands:
+- to compile in hardware mode: `make`;
+- to compile in simulation mode: `SGX_MODE=SW make`.
+
+To run the code:
 ```bash
-$ make				 # by default, compile in hardware mode
-$ SGX_MODE=SW make # or force compilation in software mode
 $ cd bin
 $ ./app
 [+] Init Enclave Successful 2!
