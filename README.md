@@ -88,14 +88,14 @@ abstractions over the SGX assembly instructions. In particular, it provides:
 	- random number generation;
 	- etc.
 
-	A more detailed list of functionalities can be found in the [Developer
-	Reference](https://download.01.org/intel-sgx/sgx-linux/2.16/docs/Intel_SGX_Developer_Reference_Linux_2.16_Open_Source.pdf).
+A more detailed list of functionalities can be found in the
+[Developer Reference](https://download.01.org/intel-sgx/sgx-linux/2.17/docs/Intel_SGX_Developer_Reference_Linux_2.17_Open_Source.pdf).
 
-	Enclave transitions (`ecalls` or `ocalls`) are a performance bottleneck and
-	should be avoided if possible. Techniques such as asynchronous calls
-	implemented in [TaLoS](https://github.com/lsds/TaLoS), or switchless calls
-	implemented in the SGX SDK (via the `transition_using_threads`; see Intel
-	documentation) can help to alleviate this problem.
+Enclave transitions (`ecalls` or `ocalls`) are a performance bottleneck and
+should be avoided if possible. Techniques such as asynchronous calls
+implemented in [TaLoS](https://github.com/lsds/TaLoS), or switchless calls
+implemented in the SGX SDK (via the `transition_using_threads`; see Intel
+documentation) can help to alleviate this problem.
 
 ### Installation
 
@@ -110,7 +110,7 @@ This tutorial has been written and tested with the Intel SGX SDK version 2.17:
 - [sdk](https://download.01.org/intel-sgx/sgx-linux/2.17/distro/ubuntu20.04-server/sgx_linux_x64_sdk_2.17.100.3.bin)
 
 For more information, please refer to the [official
-documentation](https://download.01.org/intel-sgx/sgx-linux/2.16/docs/Intel_SGX_SW_Installation_Guide_for_Linux.pdf).
+documentation](https://download.01.org/intel-sgx/sgx-linux/2.17/docs/Intel_SGX_SW_Installation_Guide_for_Linux.pdf).
 
 #### Intel SGX driver
 
@@ -398,7 +398,7 @@ installed on your platform. Then you can download the Teaclave SGX SDK:
 $ cd <this/tutorial/root/directory>
 $ git clone https://github.com/apache/incubator-teaclave-sgx-sdk.git
 $ cd incubator-teaclave-sgx-sdk
-$ git checkout 08264d6bff679d6047e5e9bc36058b4475c58ed4 $ this commit is known to work
+$ git checkout 08264d6bff679d6047e5e9bc36058b4475c58ed4 # this commit is known to work
 ```
 
 If you have obtained this tutorial as a git repository, Teaclave is a
