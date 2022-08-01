@@ -35,7 +35,7 @@ limit to hundreds of GBs, but at the cost of lack of integrity protection
 against hardware attacks: an attacker could physically tamper with the memory
 module or bus to revert (part of) the EPC to a previously valid state (see
 [this
-paper]((https://www.intel.com/content/dam/www/public/us/en/documents/white-papers/supporting-intel-sgx-on-mulit-socket-platforms.pdf)).
+paper](https://www.intel.com/content/dam/www/public/us/en/documents/white-papers/supporting-intel-sgx-on-mulit-socket-platforms.pdf)).
 
 Intel SGX provides an attestation mechanism so that remote clients can verify
 the enclave has been correctly initialised on a real SGX hardware. This
